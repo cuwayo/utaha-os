@@ -1,0 +1,18 @@
+# Android / LineageOS build output
+out/
+.repo/
+*.zip
+*.img
+*.img.gz-dtb
+
+# Release keys — NEVER commit (SPEC §11)
+*.pk8
+*.pem
+release-keys/
+
+# ccache
+.ccache/
+
+# editor / OS
+*.swp
+.DS_Store

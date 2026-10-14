@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Utaha OS local manifest.
+
+  Every entry here was verified against live sources (git ls-remote / the
+  LineageOS download API) on 2026-10-14. See docs/M0-findings.md.
+
+  IMPORTANT: ugglite has no standalone device tree in LineageOS. It is the
+  Mi8917 hardware variant of a unified target whose real code lives in
+  device/xiaomi/Mi8937 + device/xiaomi/mithorium-common. The repos below are
+  therefore declared explicitly so a sync is reproducible.
+
+  BRANCH: change all `revision=` values together when we pick the base branch.
+  Candidate bases: lineage-23.2 (Android 16, kernel 4.19.325, recommended),
+  lineage-22.2 (Android 15), lineage-20 (Android 13, kernel 4.9).
+-->
+<manifest>
+
+  <!-- Device tree: the Mi8917 wrapper (ugglite/rolex/riva) -->
+  <project name="LineageOS/android_device_xiaomi_Mi8917"
+           path="device/xiaomi/Mi8917"
+           revision="lineage-23.2"
+           remote="github" />
+
+  <!-- Device tree: the real implementation shared by Mi8917 + Mi8937 -->
+  <project name="LineageOS/android_device_xiaomi_Mi8937"
+           path="device/xiaomi/Mi8937"
+           revision="lineage-23.2"
+           remote="github" />
+
+  <!-- Shared common tree (arch, kernel config, audio, sepolicy, Wi-Fi) -->
+  <project name="LineageOS/android_device_xiaomi_mithorium-common"
+           path="device/xiaomi/mithorium-common"
+           revision="lineage-23.2"
+           remote="github" />
+
+  <!-- Proprietary blobs for the Mi8917 hardware variant -->
+  <project name="TheMuppets/proprietary_vendor_xiaomi_Mi8917"
+           path="vendor/xiaomi/Mi8917"
+           revision="lineage-23.2"
+           remote="github" />
+
+  <!-- Kernel: fork this as utaha-kernel-ugglite once the build host exists -->
+  <project name="LineageOS/android_kernel_xiaomi_msm8937"
+           path="kernel/xiaomi/msm8937"
+           revision="lineage-23.2"
+           remote="github" />
+
+</manifest>
