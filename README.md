@@ -13,11 +13,24 @@ The full specification is in [`docs/SPEC.md`](docs/SPEC.md) and is the source of
 ## Status: M0 — Feasibility
 
 M0 research is complete and verified against live sources.
-See **[`docs/M0-findings.md`](docs/M0-findings.md)** — it corrects several
-assumptions in the original spec (kernel is 4.19 not 3.18; userspace is 64-bit;
-Material You / Android 16 is already available; there is no `device/xiaomi/ugglite`).
+See **[`docs/M0-findings.md`](docs/M0-findings.md)**.
 
-Current milestone: **M0** — no code has been built yet. Baseline benchmarks not yet recorded.
+**Decisions taken (2026-10-14):**
+
+| Question | Decision |
+|---|---|
+| Base branch | **`lineage-20` — Android 13**, kernel 4.9.337 |
+| Build host | `95.216.212.168` (now **x86_64**, AMD EPYC-Genoa, 8 cores, 15 GB RAM, 301 GB disk) |
+| GApps / microG | **None** for now |
+| Bootloader | Already unlocked |
+| Device current state | Runs **postmarketOS**, **no Android installed** |
+
+**Consequence of "no Android installed":** there is no Android baseline to
+benchmark against, and no Android to fall back to. Establishing a working
+LineageOS 20 boot **is** M1, and the postmarketOS→Android recovery path must be
+written and verified first. See [`docs/build-notes.md`](docs/build-notes.md).
+
+Current milestone: **M0** — no ROM built or flashed yet.
 
 ---
 
@@ -25,42 +38,29 @@ Current milestone: **M0** — no code has been built yet. Baseline benchmarks no
 
 ```
 utaha/
-  .repo/local_manifests/utaha.xml   # all custom repos (verified against live sources)
-  device/xiaomi/                    # device trees (from LineageOS, via repo sync)
-  vendor/xiaomi/                    # proprietary blobs (from TheMuppets, via repo sync)
+  manifests/utaha.xml               # canonical repo set (tracked)
+  .repo/local_manifests/utaha.xml   # installed copy used by repo
+  device/xiaomi/                    # device trees (via repo sync)
+  vendor/xiaomi/                    # proprietary blobs (via repo sync)
   kernel/xiaomi/msm8937/            # forked as utaha-kernel-ugglite
   vendor/utaha/                     # branding, overlays, apps, product makefiles  <-- ours
   docs/                             # benchmarks, status, licenses, build notes     <-- ours
   scripts/                          # helper scripts                               <-- ours
 ```
 
-The **utaha-owned** layer is `vendor/utaha/`, `docs/`, `scripts/` and
-`.repo/local_manifests/utaha.xml`. Everything under `device/`, `vendor/xiaomi/`
-and `kernel/` comes from upstream git repos declared in the local manifest.
-
----
-
-## Hosts
-
-| Host | Arch | Role |
-|---|---|---|
-| `95.216.212.168` | **arm64** | OTA server + website. **Cannot build AOSP/LineageOS.** |
-| TBD (x86_64) | x86_64 | **Build host** — required per SPEC §3. Not yet chosen. |
-
-See [`docs/build-notes.md`](docs/build-notes.md).
+The **utaha-owned** layer is `manifests/`, `vendor/utaha/`, `docs/` and
+`scripts/`. Everything under `device/`, `vendor/xiaomi/` and `kernel/` comes
+from upstream git repos declared in the manifest.
 
 ---
 
 ## Quick start
 
 ```bash
-# on the x86_64 build host only:
-repo init -u https://github.com/LineageOS/android.git -b lineage-23.2 --git-lfs
-cp /path/to/utaha/.repo/local_manifests/utaha.xml .repo/local_manifests/
-repo sync -c -j8 --no-tags
-source build/envsetup.sh
-breakfast utaha_ugglite-userdebug
-mka bacon
+# on the build host (x86_64):
+cd ~/utaha
+./scripts/sync.sh          # repo init + sync, pinned to lineage-20
+./scripts/build.sh         # breakfast utaha_ugglite-userdebug && mka bacon
 ```
 
 ---

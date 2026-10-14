@@ -6,14 +6,13 @@
 #
 # Inherits the upstream LineageOS device product, then applies Utaha branding.
 #
-# STATUS: M0. This file is a scaffold. The inherit-product line below depends on
-# the base branch chosen in M0 and MUST be verified against the synced tree
-# before it is used (the real product name is derived from lineage_<target>.mk
-# in device/xiaomi/Mi8937). Do not treat this as buildable yet.
+# STATUS: base branch DECIDED = lineage-20 (Android 13).
+# The inherit-product target below was verified to exist on lineage-20
+# (device/xiaomi/Mi8937/lineage_Mi8917.mk returns HTTP 200). It still needs to
+# be confirmed against the actual synced tree before the first build.
 #
 
 # Inherit from the upstream device product for the Mi8917 variant (ugglite).
-# NOTE: verify the exact product makefile name after `repo sync`.
 $(call inherit-product, device/xiaomi/Mi8937/lineage_Mi8917.mk)
 
 # Utaha common configuration (branding, props, Material You, low-RAM)

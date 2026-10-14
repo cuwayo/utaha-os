@@ -2,31 +2,33 @@
 
 ## Hosts
 
-| Host | Arch | RAM | Role |
+| Host | Arch | Spec | Role |
 |---|---|---|---|
-| `95.216.212.168` | **arm64** (aarch64) | 15 GB | OTA server + website only |
-| _TBD_ | x86_64 | ≥16 GB | **Build host** — required, not yet chosen |
+| `95.216.212.168` | **x86_64** | AMD EPYC-Genoa, 8 cores, 15 GB RAM, 301 GB disk, 8 GB swap | **Build host** (decided) + OTA server + website |
 
-### ⚠️ The current VPS cannot build this ROM
+The host was re-provisioned on 2026-10-14 and is now **x86_64** (it was arm64
+before). It therefore satisfies SPEC §3's architecture requirement and is being
+used as the build host.
 
-SPEC §3 requires an **x86_64** build host. `95.216.212.168` is **aarch64**
-(Ubuntu 26.04, 8 cores, 15 GB RAM, 150 GB disk, 8 GB swap). AOSP and LineageOS
-do not build on arm64 — no arm64 host toolchain exists for a full `mka` build.
+### SPEC §3 requirement check
 
-This host is correctly used for:
-- the OTA update server,
-- the project website and changelogs,
-- git remotes / mirrors of our trees,
-- holding `docs/` and release artifacts.
+| Requirement | Actual | Status |
+|---|---|---|
+| x86_64 Linux | x86_64 | ✅ |
+| Ubuntu 22.04/24.04 | **Ubuntu 26.04 LTS** | ⚠️ newer than specified; untested with `repo`/AOSP |
+| 16 GB RAM minimum | 15 GiB | ⚠️ just under |
+| 32 GB recommended | 15 GiB | ❌ |
+| 300 GB+ SSD | 301 GB (287 GB free) | ✅ (tight — the full tree + build needs ~250 GB) |
+| 8+ cores | 8 | ✅ (minimum) |
+| 16 GB+ swap | 8 GB | ⚠️ consider raising |
+| ccache 50 GB+ | not installed | ❌ to install |
 
-The build itself must run on an x86_64 machine meeting SPEC §3
-(16 GB+ RAM, 300 GB+ SSD, 8+ cores, ccache 50 GB+).
+**Assessment:** viable but at the low end. 15 GB RAM is under the 16 GB
+minimum, and a full `mka bacon` on 8 cores with 15 GB RAM will be slow and may
+need `-j4` rather than `-j8`. Watch disk: 287 GB free is enough for one tree
+plus `out/`, but leaves little headroom. ccache will consume a further 50 GB.
 
-**Open question for the user:** which x86_64 machine will build? (SPEC §14.3)
-
----
-
-## Build host setup (x86_64)
+## Build host setup
 
 ```bash
 sudo apt update
@@ -40,34 +42,69 @@ chmod a+x ~/bin/repo
 export PATH=~/bin:$PATH
 ```
 
-## Build (once the host exists)
+> Note: `libncurses5` / `lib32ncurses5-dev` are the Ubuntu 22.04 package names.
+> On Ubuntu 26.04 they may be renamed (`libncurses-dev`, `lib32ncurses-dev`) or
+> unavailable. Verify before running — this is a known 26.04 risk.
+
+## Build
 
 ```bash
 cd ~/utaha
-repo init -u https://github.com/LineageOS/android.git -b lineage-23.2 --git-lfs
+./scripts/sync.sh      # repo init -b lineage-20 + sync, installs the local manifest
+./scripts/build.sh     # breakfast utaha_ugglite-userdebug && mka bacon
+```
+
+Or manually:
+
+```bash
+cd ~/utaha
+repo init -u https://github.com/LineageOS/android.git -b lineage-20 --git-lfs
 mkdir -p .repo/local_manifests
-cp <this repo>/.repo/local_manifests/utaha.xml .repo/local_manifests/
+cp manifests/utaha.xml .repo/local_manifests/
 repo sync -c -j8 --no-tags
 source build/envsetup.sh
 breakfast utaha_ugglite-userdebug
 mka bacon
 ```
 
-Or use `scripts/sync.sh` and `scripts/build.sh`.
-
 ## Verified repo facts (see `M0-findings.md` for the full table)
 
-- Branch to start from: **`lineage-23.2`** (Android 16, kernel 4.19.325) — *pending user decision*.
-- Device tree: `device/xiaomi/Mi8937` + `device/xiaomi/mithorium-common` (there is no `device/xiaomi/ugglite`).
+Base branch **`lineage-20`** (Android 13). Verified on 2026-10-14:
+
+- Device tree: `device/xiaomi/Mi8937` + `device/xiaomi/mithorium-common`
+  (there is **no** `device/xiaomi/ugglite` — ugglite is the `Mi8917` variant).
 - Vendor: `TheMuppets/proprietary_vendor_xiaomi_Mi8917`.
-- Kernel: `LineageOS/android_kernel_xiaomi_msm8937`.
-- Target is **arm64**; only the camera HAL is 32-bit.
+- Kernel: `LineageOS/android_kernel_xiaomi_msm8937` @ `lineage-20` = **4.9.337**.
+- Defconfig: `arch/arm64/configs/vendor/xiaomi/msm8937/mi8917.config` (arm64 path
+  confirmed; the `arch/arm/` path 404s).
+- Target is **arm64**; only the camera HAL is 32-bit (`BOARD_QTI_CAMERA_32BIT_ONLY`).
 
-## Recoverability (SPEC §4) — to prepare before any flashing
+---
 
-1. Unlock bootloader via Xiaomi Mi Unlock (waiting period applies, **wipes data**).
-2. **Back up before flashing anything:** `persist`, `modemst1`, `modemst2`, `fsg`, EFS-type partitions.
-3. Keep a known-good boot image and the stock MIUI fastboot ROM for Mi Flash.
-4. Always test with `fastboot boot <image>` before `fastboot flash`.
+## ⚠️ Device state: postmarketOS, no Android, no baseline
 
-_Recovery procedure to be written up and verified before M1._
+The device currently runs **postmarketOS** and has **no Android installed**.
+This changes M0/M1 in three ways:
+
+1. **No baseline exists.** SPEC §2 requires measuring the unmodified base before
+   any change. There is no Android on the device to measure. The first working
+   LineageOS 20 boot becomes the de-facto baseline — record it before modifying
+   anything.
+2. **No fallback.** SPEC §9.6 says keep a known-good boot image as fallback.
+   Until M1 succeeds, the fallback is the postmarketOS image (and the stock MIUI
+   fastboot ROM). Preserve both.
+3. **Recovery path must be verified first.** How postmarketOS was installed
+   (lk2nd? which partition?) determines how to get Android back. This is
+   documented separately in `docs/recovery-plan.md` and must be confirmed
+   against the actual device before flashing anything.
+
+## Recovery / preparation (SPEC §4) — REQUIRED BEFORE FLASHING
+
+1. **Back up** `persist`, `modemst1`, `modemst2`, `fsg` and EFS-type partitions.
+   Losing `persist`/`modemst*` breaks Wi-Fi/BT MAC and IMEI. Do this first.
+2. Keep the **stock MIUI fastboot ROM** for Mi Flash as the last-resort restore.
+3. Keep the current **postmarketOS boot image** as the immediate fallback.
+4. Always `fastboot boot <image>` before `fastboot flash`.
+5. Verify the EDL path for MSM8917 before it is needed.
+
+_See `docs/recovery-plan.md` (written from verified sources) for exact commands._

@@ -17,7 +17,12 @@ unmodified base before any modification (SPEC §2, §13).
 
 ## Baseline — NOT YET MEASURED
 
-Nothing has been flashed. Fill this in during M0/M1.
+**There is no Android baseline.** The device currently runs **postmarketOS** and
+has no Android installed, so there is nothing to measure a "before" against.
+
+The first working LineageOS 20 boot becomes the baseline. Record it with
+`scripts/collect-benchmarks.sh` **before** applying any Utaha modification, and
+copy the raw output below.
 
 | Metric | Base | Unit |
 |---|---|---|

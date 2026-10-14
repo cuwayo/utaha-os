@@ -10,40 +10,42 @@
   device/xiaomi/Mi8937 + device/xiaomi/mithorium-common. The repos below are
   therefore declared explicitly so a sync is reproducible.
 
-  BRANCH: change all `revision=` values together when we pick the base branch.
-  Candidate bases: lineage-23.2 (Android 16, kernel 4.19.325, recommended),
-  lineage-22.2 (Android 15), lineage-20 (Android 13, kernel 4.9).
+  BRANCH: DECIDED = lineage-20 (Android 13). Change all `revision=` values
+  together if this ever changes. Verified branches (2026-10-14):
+    - lineage-20    Android 13, kernel 4.9.337   <-- chosen
+    - lineage-22.2  Android 15, kernel 4.19.325
+    - lineage-23.2  Android 16, kernel 4.19.325
 -->
 <manifest>
 
   <!-- Device tree: the Mi8917 wrapper (ugglite/rolex/riva) -->
   <project name="LineageOS/android_device_xiaomi_Mi8917"
            path="device/xiaomi/Mi8917"
-           revision="lineage-23.2"
+           revision="lineage-20"
            remote="github" />
 
   <!-- Device tree: the real implementation shared by Mi8917 + Mi8937 -->
   <project name="LineageOS/android_device_xiaomi_Mi8937"
            path="device/xiaomi/Mi8937"
-           revision="lineage-23.2"
+           revision="lineage-20"
            remote="github" />
 
   <!-- Shared common tree (arch, kernel config, audio, sepolicy, Wi-Fi) -->
   <project name="LineageOS/android_device_xiaomi_mithorium-common"
            path="device/xiaomi/mithorium-common"
-           revision="lineage-23.2"
+           revision="lineage-20"
            remote="github" />
 
   <!-- Proprietary blobs for the Mi8917 hardware variant -->
   <project name="TheMuppets/proprietary_vendor_xiaomi_Mi8917"
            path="vendor/xiaomi/Mi8917"
-           revision="lineage-23.2"
+           revision="lineage-20"
            remote="github" />
 
   <!-- Kernel: fork this as utaha-kernel-ugglite once the build host exists -->
   <project name="LineageOS/android_kernel_xiaomi_msm8937"
            path="kernel/xiaomi/msm8937"
-           revision="lineage-23.2"
+           revision="lineage-20"
            remote="github" />
 
 </manifest>

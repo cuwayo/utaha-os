@@ -4,7 +4,9 @@ Device: Xiaomi Redmi Note 5A / Y1 Lite (`ugglite`, MSM8917)
 Maintained per milestone. Update this file after every test cycle.
 
 **Current milestone: M0 (feasibility). No ROM built or flashed yet.**
-Everything below is therefore *expected* status from upstream, not verified on our build.
+**Device state:** currently runs **postmarketOS**; no Android installed.
+Bootloader already unlocked. Everything below is therefore *expected* status
+from upstream, not verified on our build.
 
 | Area | Status | Notes |
 |---|---|---|

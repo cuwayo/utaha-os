@@ -6,7 +6,7 @@
 #
 set -euo pipefail
 
-BRANCH="${UTAHA_BRANCH:-lineage-23.2}"
+BRANCH="${UTAHA_BRANCH:-lineage-20}"
 MANIFEST_URL="${UTAHA_MANIFEST:-https://github.com/LineageOS/android.git}"
 JOBS="${UTAHA_JOBS:-8}"
 TREE="${UTAHA_TREE:-$HOME/utaha}"

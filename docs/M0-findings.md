@@ -137,22 +137,32 @@ against the 4.19 tree (not 3.18) after sync.
 
 ## 7. Answers to SPEC §14 open questions
 
-1. **Device / RAM** — still needs `getprop ro.product.device` on the physical unit. Expect `ugglite`.
-2. **Bootloader unlocked? Stock MIUI version?** — **must be answered by the user.**
-3. **Which x86_64 machine builds?** — **must be answered by the user.** The VPS is arm64.
-4. **Material You priority** — resolved: native monet is available (Android 16). No risky port needed.
-5. **GApps / microG / none** — default is **none** (see `vendor/utaha/config/`).
-6. **Exact camera sensors** — rear ∈ {S5K3L8, OV13855}, front ∈ {S5K5E8 variants}; per-unit identity to be read from the device.
+| # | Question | Answer |
+|---|---|---|
+| 1 | Device / RAM | **Answered by user:** Redmi Note 5A Lite, `ugglite`. Exact RAM still to read from the device. |
+| 2 | Bootloader / stock MIUI | **Bootloader already unlocked.** Stock MIUI version: N/A — device currently runs **postmarketOS**, no Android. |
+| 3 | Which x86_64 machine builds? | **Answered:** `95.216.212.168` itself, re-provisioned to x86_64 (AMD EPYC-Genoa, 8 cores, 15 GB RAM, 301 GB disk). |
+| 4 | Material You priority | Native monet available on 12+; with the Android 13 decision, monet is still native. |
+| 5 | GApps / microG / none | **None** (decided). |
+| 6 | Camera sensors | Rear ∈ {S5K3L8, OV13855}, front ∈ {S5K5E8 variants}. Per-unit identity must be read from the device. |
 
----
+## 8. Base choice — DECIDED
 
-## 8. Recommended base choice (for user decision)
+**Decision (2026-10-14): `lineage-20` — Android 13, kernel 4.9.337.**
 
-| Option | Branch | Android | Kernel | Pros | Cons |
-|---|---|---|---|---|---|
-| **A (recommended)** | `lineage-23.2` | 16 | 4.19.325 | Newest; native Material You; signed nightly exists as a baseline reference | Device flagged unmaintained; newest = least battle-tested on 2 GB |
-| B | `lineage-22.2` | 15 | 4.19.325 | Still has monet; slightly more mature | One version behind |
-| C | `lineage-20` | 13 | 4.9.337 | Older, lighter kernel | No longer newest; loses 2 years of fixes |
+| Option | Branch | Android | Kernel | Outcome |
+|---|---|---|---|---|
+| A | `lineage-23.2` | 16 | 4.19.325 | Not chosen — newest, but heaviest for 2 GB and device is unmaintained |
+| B | `lineage-22.2` | 15 | 4.19.325 | Not chosen |
+| **C** | **`lineage-20`** | **13** | **4.9.337** | **CHOSEN** — Android 13 per user; lighter kernel; monet present |
 
-**Decision required from the user before M1.** Baseline benchmarks must be
-recorded on the chosen base before any modification.
+Verified on `lineage-20` (all HTTP 200 / ls-remote OK on 2026-10-14):
+
+- `device/xiaomi/Mi8937/lineage_Mi8917.mk`
+- `arch/arm64/configs/vendor/xiaomi/msm8937/mi8917.config`
+- kernel `Makefile` → `VERSION 4 / PATCHLEVEL 9 / SUBLEVEL 337`
+- `BoardConfig.mk` OTA assert includes `ugglite`
+
+**Baseline note:** the device has no Android installed (it runs postmarketOS),
+so there is no pre-existing base to benchmark. The first working LineageOS 20
+boot serves as the baseline and must be measured before any modification.
