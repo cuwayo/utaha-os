@@ -6,7 +6,10 @@
 #
 set -euo pipefail
 
-BRANCH="${UTAHA_BRANCH:-lineage-20}"
+# NOTE: the LineageOS *manifest* branch is `lineage-20.0` (with a .0 suffix),
+# while the device/vendor/kernel *repos* use `lineage-20` (no suffix). These are
+# different and must not be conflated — see manifests/utaha.xml.
+BRANCH="${UTAHA_BRANCH:-lineage-20.0}"
 MANIFEST_URL="${UTAHA_MANIFEST:-https://github.com/LineageOS/android.git}"
 JOBS="${UTAHA_JOBS:-8}"
 TREE="${UTAHA_TREE:-$HOME/utaha}"

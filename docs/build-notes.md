@@ -15,18 +15,36 @@ used as the build host.
 | Requirement | Actual | Status |
 |---|---|---|
 | x86_64 Linux | x86_64 | ✅ |
-| Ubuntu 22.04/24.04 | **Ubuntu 26.04 LTS** | ⚠️ newer than specified; untested with `repo`/AOSP |
-| 16 GB RAM minimum | 15 GiB | ⚠️ just under |
+| Ubuntu 22.04/24.04 | **Ubuntu 26.04 LTS** | ⚠️ newer than specified; package names differ (see below) |
+| 16 GB RAM minimum | 15 GiB (≈16.1 GB) | ✅ (meets decimal 16 GB; tight) |
 | 32 GB recommended | 15 GiB | ❌ |
-| 300 GB+ SSD | 301 GB (287 GB free) | ✅ (tight — the full tree + build needs ~250 GB) |
+| 300 GB+ SSD | 301 GB (254 GB free after sync) | ✅ (tight — tree + `out/` needs ~250 GB) |
 | 8+ cores | 8 | ✅ (minimum) |
-| 16 GB+ swap | 8 GB | ⚠️ consider raising |
-| ccache 50 GB+ | not installed | ❌ to install |
+| 16 GB+ swap | **16 GB** (created 2026-10-14) | ✅ |
+| ccache 50 GB+ | 50 GB configured | ✅ |
 
-**Assessment:** viable but at the low end. 15 GB RAM is under the 16 GB
-minimum, and a full `mka bacon` on 8 cores with 15 GB RAM will be slow and may
-need `-j4` rather than `-j8`. Watch disk: 287 GB free is enough for one tree
-plus `out/`, but leaves little headroom. ccache will consume a further 50 GB.
+**Assessment:** viable but at the low end. Build with `-j4` rather than `-j8`
+to avoid OOM with 15 GiB RAM. Watch disk during the build — `out/` can consume
+80–120 GB on its own.
+
+### Ubuntu 26.04 package differences
+
+The SPEC §3 tool list assumes Ubuntu 22.04/24.04. On 26.04 these were renamed
+and the originals no longer exist:
+
+| 22.04 name (spec) | 26.04 name (used) |
+|---|---|
+| `libncurses5` | `libncurses-dev` |
+| `lib32ncurses5-dev` | `lib32ncurses-dev` |
+
+`apt-get install` fails entirely if any name is missing, so use the 26.04 names.
+
+### Environment applied on the host
+
+- `/root/bin/repo` (repo launcher 2.65), added to `PATH` in `~/.bashrc`
+- `ccache` limited to 50 GB at `/root/.ccache`
+- 16 GB `/swapfile`, persisted in `/etc/fstab`
+- `git-lfs` 3.7.1 (required by the LineageOS manifest)
 
 ## Build host setup
 
@@ -50,7 +68,7 @@ export PATH=~/bin:$PATH
 
 ```bash
 cd ~/utaha
-./scripts/sync.sh      # repo init -b lineage-20 + sync, installs the local manifest
+./scripts/sync.sh      # repo init -b lineage-20.0 + sync, installs the local manifest
 ./scripts/build.sh     # breakfast utaha_ugglite-userdebug && mka bacon
 ```
 
@@ -58,7 +76,7 @@ Or manually:
 
 ```bash
 cd ~/utaha
-repo init -u https://github.com/LineageOS/android.git -b lineage-20 --git-lfs
+repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --git-lfs
 mkdir -p .repo/local_manifests
 cp manifests/utaha.xml .repo/local_manifests/
 repo sync -c -j8 --no-tags
@@ -66,6 +84,17 @@ source build/envsetup.sh
 breakfast utaha_ugglite-userdebug
 mka bacon
 ```
+
+### ⚠️ Manifest branch vs repo branch (easy to get wrong)
+
+The LineageOS **manifest** branch is **`lineage-20.0`** (with `.0`). The
+**device/vendor/kernel repos** use **`lineage-20`** (no suffix). Mixing these up
+fails with `couldn't find remote ref refs/heads/lineage-20`. Verified:
+
+| Ref | Value |
+|---|---|
+| `LineageOS/android` (manifest) | `lineage-20.0` |
+| device/vendor/kernel repos | `lineage-20` |
 
 ## Verified repo facts (see `M0-findings.md` for the full table)
 
