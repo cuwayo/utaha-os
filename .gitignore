@@ -1,14 +1,40 @@
-# Android / LineageOS build output
-out/
-.repo/
-*.zip
-*.img
-*.img.gz-dtb
+# Utaha OS repository.
+#
+# IMPORTANT: this repo lives at ~/utaha, which is ALSO the Android source tree
+# root (SPEC §6). A `repo sync` therefore drops ~100k upstream files into this
+# same directory. This is a whitelist gitignore: everything is ignored by
+# default, and only the Utaha-owned layer is tracked.
+#
+# Tracked:  .gitignore, README.md, docs/, manifests/, scripts/, vendor/utaha/
+# Ignored:  device/, vendor/xiaomi/, kernel/, build/, frameworks/, packages/,
+#           out/, .repo/, and every other upstream checkout.
 
-# Release keys — NEVER commit (SPEC §11)
+/*
+!/.gitignore
+!/README.md
+!/docs
+!/manifests
+!/scripts
+!/vendor
+
+# vendor/ is whitelisted above only so vendor/utaha/ can be reached.
+# Everything else under vendor/ (i.e. vendor/xiaomi/ proprietary blobs) is ignored.
+/vendor/*
+!/vendor/utaha
+
+# --- Safety nets (apply regardless of the whitelist above) ---
+
+# Release signing keys — NEVER commit (SPEC §11)
 *.pk8
 *.pem
 release-keys/
+keys/
+
+# Build output / archives
+*.zip
+*.img
+*.img.gz-dtb
+*.tar.md5
 
 # ccache
 .ccache/
