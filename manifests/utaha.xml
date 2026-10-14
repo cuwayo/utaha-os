@@ -12,7 +12,7 @@
 
   BRANCH: DECIDED = lineage-20 (Android 13). Change all `revision=` values
   together if this ever changes. Verified branches (2026-10-14):
-    - lineage-20    Android 13, kernel 4.9.337   <-- chosen
+    - lineage-20    Android 13, kernel 4.9.337   [CHOSEN]
     - lineage-22.2  Android 15, kernel 4.19.325
     - lineage-23.2  Android 16, kernel 4.19.325
 -->
